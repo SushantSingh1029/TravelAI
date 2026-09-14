@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     AI_API_KEY: str | None = None
+    FRONTEND_URL: str | None = None
 
     class Config:
         env_file = ".env"
