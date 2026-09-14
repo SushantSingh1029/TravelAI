@@ -42,10 +42,12 @@
 }
 .form-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 20px;
 }
 .form-row .form-group {
   flex: 1;
+  min-width: 200px;
 }
 .form-group {
   margin-bottom: 20px;
