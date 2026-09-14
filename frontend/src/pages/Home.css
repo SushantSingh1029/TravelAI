@@ -1,0 +1,122 @@
+.home {
+  width: 100%;
+}
+.hero {
+  position: relative;
+  height: 90vh;
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.6));
+}
+.hero-content {
+  position: relative;
+  z-index: 10;
+  color: white;
+  max-width: 800px;
+  padding: 20px;
+}
+.hero-title {
+  font-size: 4rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 20px;
+  text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.hero-subtitle {
+  font-size: 1.25rem;
+  margin-bottom: 40px;
+  opacity: 0.9;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.hero-btn {
+  font-size: 1.125rem;
+  padding: 16px 32px;
+}
+
+.section-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 50px;
+  color: var(--text-main);
+}
+
+.destinations-section {
+  padding: 100px 5%;
+  background: var(--surface);
+}
+.destinations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.dest-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+  background: var(--surface);
+  cursor: pointer;
+}
+.dest-card:hover {
+  transform: translateY(-10px);
+  box-shadow: var(--shadow-lg);
+}
+.dest-img {
+  width: 100%;
+  height: 400px;
+  object-fit: cover;
+}
+.dest-info {
+  padding: 24px;
+}
+.dest-info h3 {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+}
+.dest-info p {
+  color: var(--text-muted);
+}
+
+.categories-section {
+  padding: 80px 5%;
+  background: var(--bg-color);
+}
+.categories-flex {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.category-badge {
+  background: var(--surface);
+  padding: 16px 32px;
+  border-radius: 30px;
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition);
+  cursor: pointer;
+}
+.category-badge:hover {
+  transform: scale(1.05);
+  box-shadow: var(--shadow-md);
+  color: var(--primary);
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2.5rem;
+  }
+}

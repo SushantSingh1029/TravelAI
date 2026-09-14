@@ -1,0 +1,26 @@
+.map-view-wrapper {
+  width: 100%;
+  height: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  border: 4px solid var(--surface);
+  position: relative;
+  z-index: 1; /* Keep map behind popups if any */
+}
+
+.itinerary-map {
+  width: 100%;
+  height: 500px; /* Fixed height for the map */
+}
+
+/* Custom styles for our marker popup */
+.custom-popup {
+  padding: 5px;
+  text-align: center;
+}
+
+.custom-popup strong {
+  color: var(--primary);
+  font-size: 1.1rem;
+}

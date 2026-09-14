@@ -1,0 +1,43 @@
+.destination-card {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+.destination-card:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+.dest-card-img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+.dest-card-content {
+  padding: 20px;
+}
+.dest-card-content h3 {
+  font-size: 1.25rem;
+  margin-bottom: 4px;
+}
+.dest-country {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+.dest-categories {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.dest-cat-badge {
+  font-size: 0.75rem;
+  background: var(--bg-color);
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: var(--text-main);
+  font-weight: 500;
+}
