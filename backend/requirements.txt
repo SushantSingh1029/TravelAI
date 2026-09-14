@@ -8,3 +8,5 @@ python-jose[cryptography]
 passlib[bcrypt]
 python-dotenv
 email-validator
+
+google-generativeai==0.8.6
