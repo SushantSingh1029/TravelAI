@@ -5,8 +5,39 @@ from backend.models.place import PlaceResponse
 from backend.config.database import get_database
 from bson import ObjectId
 from backend.utils.mongo import serialize_doc, serialize_docs
+from backend.services.ai_service import ai_service
 
 router = APIRouter()
+
+@router.get("/explore-global")
+async def explore_global(name: str):
+    if not name:
+        raise HTTPException(status_code=400, detail="Destination name is required")
+        
+    try:
+        places = await ai_service.explore_global_destination(name)
+        return places.model_dump()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/search-global")
+async def search_global(q: str):
+    if not q:
+        return []
+    import urllib.request
+    import urllib.parse
+    import json
+    try:
+        req = urllib.request.Request(
+            f"https://nominatim.openstreetmap.org/search?format=json&q={urllib.parse.quote(q)}&limit=5",
+            headers={'User-Agent': 'TravelAI/1.0 (contact@travelai.com)'}
+        )
+        res = urllib.request.urlopen(req)
+        data = json.loads(res.read())
+        return data
+    except Exception as e:
+        print(f"Failed to fetch Nominatim: {e}")
+        return []
 
 @router.get("/", response_model=List[DestinationResponse])
 async def get_destinations(db = Depends(get_database)):

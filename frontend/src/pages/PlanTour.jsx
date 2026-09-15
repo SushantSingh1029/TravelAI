@@ -2,7 +2,8 @@ import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { FavoritesContext } from '../context/FavoritesContext';
 import Itinerary from '../components/itinerary/Itinerary';
-import Select from 'react-select';
+import { useLocation } from 'react-router-dom';
+import AsyncSelect from 'react-select/async';
 import './PlanTour.css';
 
 const TRAVEL_STYLES = ['Budget', 'Relaxed', 'Balanced', 'Adventure', 'Luxury'];
@@ -18,8 +19,11 @@ export default function PlanTour() {
   const [generating, setGenerating] = useState(false);
   const [generatedTrip, setGeneratedTrip] = useState(null);
   
+  const location = useLocation();
+  
   const [formData, setFormData] = useState({
     destinationId: '',
+    destinationName: location.state?.globalDestination || '',
     days: 3,
     budget: '',
     travellers: 2,
@@ -84,8 +88,7 @@ export default function PlanTour() {
     setGenerating(true);
     try {
       // 1. Create Trip
-      const tripRes = await api.post('/api/trips', {
-        destination_id: formData.destinationId,
+      const tripPayload = {
         days: parseInt(formData.days),
         budget: formData.budget || "Unspecified",
         travellers: parseInt(formData.travellers),
@@ -95,7 +98,15 @@ export default function PlanTour() {
           interests: formData.interests
         },
         favorite_place_ids: formData.selectedPlaces
-      });
+      };
+
+      if (formData.destinationId) {
+        tripPayload.destination_id = formData.destinationId;
+      } else if (formData.destinationName) {
+        tripPayload.destination_name = formData.destinationName;
+      }
+
+      const tripRes = await api.post('/api/trips', tripPayload);
       
       const tripId = tripRes.id || tripRes.data.id;
       
@@ -141,12 +152,48 @@ export default function PlanTour() {
             
             <div className="form-group">
               <label>Destination</label>
-              <Select
-                options={destinations.map(d => ({ value: d.id, label: `${d.name}, ${d.country}` }))}
-                value={destinations.filter(d => d.id === formData.destinationId).map(d => ({ value: d.id, label: `${d.name}, ${d.country}` }))[0] || null}
-                onChange={(selectedOption) => setFormData({...formData, destinationId: selectedOption ? selectedOption.value : ''})}
-                placeholder="Select a destination..."
-                isSearchable={true}
+              <AsyncSelect
+                cacheOptions
+                defaultOptions={destinations.map(d => ({ value: d.id, label: `${d.name}, ${d.country}`, isSeeded: true }))}
+                loadOptions={async (inputValue) => {
+                  if (!inputValue) return destinations.map(d => ({ value: d.id, label: `${d.name}, ${d.country}`, isSeeded: true }));
+                  
+                  const seededMatches = destinations
+                    .filter(d => d.name.toLowerCase().includes(inputValue.toLowerCase()) || d.country.toLowerCase().includes(inputValue.toLowerCase()))
+                    .map(d => ({ value: d.id, label: `${d.name}, ${d.country} (Featured)`, isSeeded: true }));
+
+                  if (inputValue.length < 3) return seededMatches;
+
+                  try {
+                    const response = await api.get(`/api/destinations/search-global?q=${inputValue}`);
+                    const data = response.data;
+                    const globalMatches = data.map(item => ({
+                      value: item.display_name,
+                      label: item.display_name,
+                      isSeeded: false
+                    }));
+                    return [...seededMatches, ...globalMatches];
+                  } catch (e) {
+                    return seededMatches;
+                  }
+                }}
+                value={
+                  formData.destinationId 
+                    ? { value: formData.destinationId, label: destinations.find(d => d.id === formData.destinationId)?.name || 'Unknown' }
+                    : formData.destinationName 
+                      ? { value: formData.destinationName, label: formData.destinationName }
+                      : null
+                }
+                onChange={(selectedOption) => {
+                  if (!selectedOption) {
+                    setFormData({...formData, destinationId: '', destinationName: ''});
+                  } else if (selectedOption.isSeeded) {
+                    setFormData({...formData, destinationId: selectedOption.value, destinationName: ''});
+                  } else {
+                    setFormData({...formData, destinationId: '', destinationName: selectedOption.value});
+                  }
+                }}
+                placeholder="Search any city in the world..."
                 styles={{
                   control: (base) => ({
                     ...base,
@@ -243,7 +290,7 @@ export default function PlanTour() {
             
             <div className="summary-box">
               <h3>Trip Summary</h3>
-              <p><strong>Destination:</strong> {destinations.find(d => d.id === formData.destinationId)?.name || 'Not selected'}</p>
+              <p><strong>Destination:</strong> {formData.destinationId ? (destinations.find(d => d.id === formData.destinationId)?.name || 'Unknown') : formData.destinationName}</p>
               <p><strong>Duration:</strong> {formData.days} days | <strong>Travellers:</strong> {formData.travellers}</p>
               <p><strong>Budget:</strong> {formData.budget || 'Not specified'}</p>
               <p><strong>Style:</strong> {formData.travelStyle}</p>
@@ -257,7 +304,7 @@ export default function PlanTour() {
           ) : <div></div>}
           
           {step < 3 ? (
-            <button className="btn-primary" onClick={handleNext} disabled={step === 1 && !formData.destinationId}>
+            <button className="btn-primary" onClick={handleNext} disabled={step === 1 && !formData.destinationId && !formData.destinationName}>
               Continue →
             </button>
           ) : (

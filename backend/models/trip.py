@@ -3,7 +3,8 @@ from typing import List, Optional
 from datetime import datetime
 
 class TripRequest(BaseModel):
-    destination_id: str
+    destination_id: Optional[str] = None
+    destination_name: Optional[str] = None
     days: int
     budget: str
     travellers: int
@@ -23,7 +24,8 @@ class OptimizeRequest(BaseModel):
 class TripResponse(BaseModel):
     id: str
     user_id: str
-    destination_id: str
+    destination_id: Optional[str] = None
+    destination_name: Optional[str] = None
     days: int
     budget: str
     travellers: int

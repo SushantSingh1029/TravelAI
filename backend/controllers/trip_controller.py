@@ -58,11 +58,18 @@ async def regenerate_itinerary(id: str, request: RegenerateRequest, user: dict =
         raise HTTPException(status_code=403, detail="Not authorized to access this trip")
 
     # Fetch Destination to pass its context
-    destination = await db.destinations.find_one({"_id": ObjectId(trip["destination_id"])})
+    dest_name = trip.get("destination_name")
+    if trip.get("destination_id") and ObjectId.is_valid(trip["destination_id"]):
+        destination = await db.destinations.find_one({"_id": ObjectId(trip["destination_id"])})
+        if destination:
+            dest_name = destination["name"]
+            
+    if not dest_name:
+        dest_name = "Unknown Location"
     
     # We pass everything to the AI service
     payload = {
-        "destination_name": destination["name"] if destination else "Unknown",
+        "destination_name": dest_name,
         "trip_config": {
             "days": trip["days"],
             "budget": trip["budget"],
@@ -105,9 +112,14 @@ async def generate_itinerary(id: str, user: dict = Depends(get_current_user), db
         raise HTTPException(status_code=403, detail="Not authorized to access this trip")
 
     # Fetch Destination
-    destination = await db.destinations.find_one({"_id": ObjectId(trip["destination_id"])})
-    if not destination:
-        raise HTTPException(status_code=404, detail="Destination not found")
+    dest_name = trip.get("destination_name")
+    if trip.get("destination_id") and ObjectId.is_valid(trip["destination_id"]):
+        destination = await db.destinations.find_one({"_id": ObjectId(trip["destination_id"])})
+        if destination:
+            dest_name = destination["name"]
+            
+    if not dest_name:
+        raise HTTPException(status_code=400, detail="Trip must have a valid destination ID or name")
 
     # Fetch Favorite Places
     fav_place_ids = [ObjectId(pid) for pid in trip.get("favorite_place_ids", []) if ObjectId.is_valid(pid)]
@@ -118,7 +130,7 @@ async def generate_itinerary(id: str, user: dict = Depends(get_current_user), db
 
     # Build prompt payload
     trip_context = {
-        "destination_name": destination["name"],
+        "destination_name": dest_name,
         "days": trip["days"],
         "budget": trip["budget"],
         "travellers": trip["travellers"],
@@ -149,8 +161,8 @@ async def generate_itinerary(id: str, user: dict = Depends(get_current_user), db
 
 @router.post("/", response_model=TripResponse)
 async def create_trip(request: TripRequest, user: dict = Depends(get_current_user), db = Depends(get_database)):
-    if not ObjectId.is_valid(request.destination_id):
-        raise HTTPException(status_code=400, detail="Invalid Destination ID")
+    if not request.destination_id and not request.destination_name:
+        raise HTTPException(status_code=400, detail="Must provide either a destination_id or destination_name")
         
     user_id_str = str(user["_id"])
     now = datetime.utcnow().isoformat()

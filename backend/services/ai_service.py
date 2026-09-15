@@ -2,6 +2,15 @@ import json
 import google.generativeai as genai
 from pydantic import ValidationError
 from backend.models.itinerary import Itinerary, BudgetBreakdown, ItineraryDay, ItineraryActivity
+from pydantic import BaseModel
+
+class AIPlace(BaseModel):
+    name: str
+    category: str
+    description: str
+
+class AIPlaceList(BaseModel):
+    places: list[AIPlace]
 from backend.config.settings import settings
 
 class AIService:
@@ -148,6 +157,40 @@ class AIService:
         except ValidationError as e:
             print(f"REAL GEMINI FAIL: Validation Error: {e}")
             raise Exception("Gemini returned invalid structured output during budget optimization")
+        except Exception as e:
+            print(f"REAL GEMINI FAIL: Error: {e}")
+            raise
+
+    async def explore_global_destination(self, destination_name: str) -> AIPlaceList:
+        print(f"REAL GEMINI: AI explore_global_destination started for {destination_name}")
+        if not self.model:
+            raise ValueError("AI_API_KEY missing, cannot use real Gemini API.")
+            
+        system_prompt = f"""
+        You are an expert travel guide. The user is exploring a potential trip to {destination_name}.
+        
+        YOUR MISSION:
+        Generate exactly 6 of the most famous, iconic, and highly recommended tourist attractions or places to visit in {destination_name}.
+        Ensure they are real, prominent locations.
+        Return strictly valid JSON matching the exact provided schema (a list of places with name, category, and a brief 2-sentence description).
+        """
+        
+        try:
+            response = self.model.generate_content(
+                system_prompt,
+                generation_config=genai.GenerationConfig(
+                    response_mime_type="application/json",
+                    response_schema=AIPlaceList
+                ),
+            )
+            print("REAL GEMINI: AI explore_global_destination response received")
+            
+            places_data = json.loads(response.text)
+            validated_places = AIPlaceList(**places_data)
+            return validated_places
+        except ValidationError as e:
+            print(f"REAL GEMINI FAIL: Validation Error: {e}")
+            raise Exception("Gemini returned invalid structured output during exploration")
         except Exception as e:
             print(f"REAL GEMINI FAIL: Error: {e}")
             raise
