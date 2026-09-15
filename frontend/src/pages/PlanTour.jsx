@@ -6,6 +6,16 @@ import { useLocation } from 'react-router-dom';
 import AsyncSelect from 'react-select/async';
 import './PlanTour.css';
 
+const debouncePromise = (fn, wait) => {
+  let timeout;
+  return (...args) => new Promise(resolve => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(async () => {
+      resolve(await fn(...args));
+    }, wait);
+  });
+};
+
 const TRAVEL_STYLES = ['Budget', 'Relaxed', 'Balanced', 'Adventure', 'Luxury'];
 const INTERESTS = ['Beaches', 'Nature', 'Adventure', 'Food', 'Shopping', 'Culture', 'Photography', 'Nightlife', 'History', 'Relaxation'];
 
@@ -155,7 +165,7 @@ export default function PlanTour() {
               <AsyncSelect
                 cacheOptions
                 defaultOptions={destinations.map(d => ({ value: d.id, label: `${d.name}, ${d.country}`, isSeeded: true }))}
-                loadOptions={async (inputValue) => {
+                loadOptions={debouncePromise(async (inputValue) => {
                   if (!inputValue) return destinations.map(d => ({ value: d.id, label: `${d.name}, ${d.country}`, isSeeded: true }));
                   
                   const seededMatches = destinations
@@ -176,7 +186,7 @@ export default function PlanTour() {
                   } catch (e) {
                     return seededMatches;
                   }
-                }}
+                }, 800)}
                 value={
                   formData.destinationId 
                     ? { value: formData.destinationId, label: destinations.find(d => d.id === formData.destinationId)?.name || 'Unknown' }

@@ -18,7 +18,7 @@ class AIService:
         self.api_key = settings.AI_API_KEY
         if self.api_key:
             genai.configure(api_key=self.api_key)
-            # Use gemini-3.6-flash for speed and JSON structure support
+            # Use gemini-3.6-flash for speed and robust JSON structure support
             self.model = genai.GenerativeModel("gemini-3.6-flash")
         else:
             print("WARNING: AI_API_KEY is not set in environment.")
@@ -42,20 +42,55 @@ class AIService:
         - Interests: {trip_request.get('preferences', {}).get('interests', [])}
         - Travel Style: {trip_request.get('preferences', {}).get('travelStyle', 'Balanced')}
         
-        Generate a strictly valid JSON matching the exact provided schema. 
+        Generate a strictly valid JSON. 
         If a required favorite place cannot reasonably fit due to budget or time constraints, 
         do NOT silently remove it. You MUST explain why it was excluded in the 'explanations' field.
+        
+        OUTPUT FORMAT (Strict JSON matching this exact structure):
+        {{
+          "destination": "City, Country",
+          "days": [
+            {{
+              "day_number": 1,
+              "date": "2024-10-01",
+              "theme": "Historical Wonders",
+              "activities": [
+                {{
+                  "activity_name": "Title",
+                  "place_id": null,
+                  "description": "Short description",
+                  "cost": 50.0,
+                  "start_time": "09:00 AM",
+                  "end_time": "11:00 AM",
+                  "duration": "2 hours",
+                  "travel_time": "30 mins",
+                  "latitude": 0.0,
+                  "longitude": 0.0
+                }}
+              ]
+            }}
+          ],
+          "budget_breakdown": {{
+            "accommodation": 500,
+            "food": 300,
+            "transportation": 100,
+            "activities": 200,
+            "miscellaneous": 100,
+            "total": 1200
+          }},
+          "explanations": []
+        }}
         """
         
         try:
             response = self.model.generate_content(
                 system_prompt,
                 generation_config=genai.GenerationConfig(
-                    response_mime_type="application/json",
-                    response_schema=Itinerary
+                    response_mime_type="application/json"
                 ),
             )
             print("REAL GEMINI: AI generate_itinerary response received")
+            print("RAW JSON:", response.text)
             
             itinerary_data = json.loads(response.text)
             validated_itinerary = Itinerary(**itinerary_data)
@@ -96,14 +131,48 @@ class AIService:
         Only adjust start/end times and travel times logically to accommodate the added places or cover gaps left by removed places.
         Recalculate the cost.
         Return strictly valid JSON matching the exact provided schema.
+        
+        OUTPUT FORMAT (Strict JSON matching this exact structure):
+        {{
+          "destination": "City, Country",
+          "days": [
+            {{
+              "day_number": 1,
+              "date": "2024-10-01",
+              "theme": "Historical Wonders",
+              "activities": [
+                {{
+                  "activity_name": "Title",
+                  "place_id": null,
+                  "description": "Short description",
+                  "cost": 50.0,
+                  "start_time": "09:00 AM",
+                  "end_time": "11:00 AM",
+                  "duration": "2 hours",
+                  "travel_time": "30 mins",
+                  "latitude": 0.0,
+                  "longitude": 0.0
+                }}
+              ]
+            }}
+          ],
+          "budget_breakdown": {{
+            "accommodation": 500,
+            "food": 300,
+            "transportation": 100,
+            "activities": 200,
+            "miscellaneous": 100,
+            "total": 1200
+          }},
+          "explanations": []
+        }}
         """
         
         try:
             response = self.model.generate_content(
                 system_prompt,
                 generation_config=genai.GenerationConfig(
-                    response_mime_type="application/json",
-                    response_schema=Itinerary
+                    response_mime_type="application/json"
                 ),
             )
             print("REAL GEMINI: AI regenerate_itinerary response received")
@@ -138,14 +207,48 @@ class AIService:
         3. CRITICAL: Preserve the destination, duration, and required favourite places.
         4. Recalculate the cost.
         Return strictly valid JSON matching the exact provided schema.
+        
+        OUTPUT FORMAT (Strict JSON matching this exact structure):
+        {{
+          "destination": "City, Country",
+          "days": [
+            {{
+              "day_number": 1,
+              "date": "2024-10-01",
+              "theme": "Historical Wonders",
+              "activities": [
+                {{
+                  "activity_name": "Title",
+                  "place_id": null,
+                  "description": "Short description",
+                  "cost": 50.0,
+                  "start_time": "09:00 AM",
+                  "end_time": "11:00 AM",
+                  "duration": "2 hours",
+                  "travel_time": "30 mins",
+                  "latitude": 0.0,
+                  "longitude": 0.0
+                }}
+              ]
+            }}
+          ],
+          "budget_breakdown": {{
+            "accommodation": 500,
+            "food": 300,
+            "transportation": 100,
+            "activities": 200,
+            "miscellaneous": 100,
+            "total": 1200
+          }},
+          "explanations": []
+        }}
         """
         
         try:
             response = self.model.generate_content(
                 system_prompt,
                 generation_config=genai.GenerationConfig(
-                    response_mime_type="application/json",
-                    response_schema=Itinerary
+                    response_mime_type="application/json"
                 ),
             )
             print("REAL GEMINI: AI optimize_budget response received")

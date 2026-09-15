@@ -6,7 +6,7 @@
 }
 
 .itinerary-header {
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
   border-radius: 20px;
   padding: 40px;
   color: white;

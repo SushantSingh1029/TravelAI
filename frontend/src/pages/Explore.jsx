@@ -4,6 +4,16 @@ import DestinationCard from '../components/DestinationCard';
 import AsyncSelect from 'react-select/async';
 import { useNavigate } from 'react-router-dom';
 
+const debouncePromise = (fn, wait) => {
+  let timeout;
+  return (...args) => new Promise(resolve => {
+    if (timeout) clearTimeout(timeout);
+    timeout = setTimeout(async () => {
+      resolve(await fn(...args));
+    }, wait);
+  });
+};
+
 const ExploredPlaceCard = ({ place }) => {
   const [imgUrl, setImgUrl] = useState(null);
 
@@ -101,7 +111,7 @@ export default function Explore() {
         <AsyncSelect
           cacheOptions
           defaultOptions={destinations.map(d => ({ value: d.name, label: `${d.name}, ${d.country}`, isSeeded: true }))}
-          loadOptions={async (inputValue) => {
+          loadOptions={debouncePromise(async (inputValue) => {
             if (!inputValue) return destinations.map(d => ({ value: d.name, label: `${d.name}, ${d.country}`, isSeeded: true }));
             
             const seededMatches = destinations
@@ -122,7 +132,7 @@ export default function Explore() {
             } catch (e) {
               return seededMatches;
             }
-          }}
+          }, 800)}
           value={search ? { value: search, label: search } : null}
           onChange={(selectedOption) => setSearch(selectedOption ? selectedOption.value : '')}
           placeholder="Search any city in the world..."
