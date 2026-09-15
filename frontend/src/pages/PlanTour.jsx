@@ -2,6 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import api from '../services/api';
 import { FavoritesContext } from '../context/FavoritesContext';
 import Itinerary from '../components/itinerary/Itinerary';
+import Select from 'react-select';
 import './PlanTour.css';
 
 const TRAVEL_STYLES = ['Budget', 'Relaxed', 'Balanced', 'Adventure', 'Luxury'];
@@ -140,16 +141,23 @@ export default function PlanTour() {
             
             <div className="form-group">
               <label>Destination</label>
-              <select 
-                value={formData.destinationId} 
-                onChange={(e) => setFormData({...formData, destinationId: e.target.value})}
-                required
-              >
-                <option value="">Select a destination...</option>
-                {destinations.map(d => (
-                  <option key={d.id} value={d.id}>{d.name}, {d.country}</option>
-                ))}
-              </select>
+              <Select
+                options={destinations.map(d => ({ value: d.id, label: `${d.name}, ${d.country}` }))}
+                value={destinations.filter(d => d.id === formData.destinationId).map(d => ({ value: d.id, label: `${d.name}, ${d.country}` }))[0] || null}
+                onChange={(selectedOption) => setFormData({...formData, destinationId: selectedOption ? selectedOption.value : ''})}
+                placeholder="Select a destination..."
+                isSearchable={true}
+                styles={{
+                  control: (base) => ({
+                    ...base,
+                    padding: '6px',
+                    borderRadius: '8px',
+                    border: '1px solid #ddd',
+                    boxShadow: 'none',
+                    '&:hover': { border: '1px solid #aaa' }
+                  })
+                }}
+              />
             </div>
 
             <div className="form-row">

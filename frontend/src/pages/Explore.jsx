@@ -36,6 +36,8 @@ export default function Explore() {
           placeholder="Search by name or country..." 
           value={search}
           onChange={(e) => setSearch(e.target.value)}
+          autoComplete="off"
+          spellCheck="false"
           style={{ width: '100%', maxWidth: '400px', padding: '12px 20px', borderRadius: '30px', border: '1px solid #ccc', fontSize: '1rem', outline: 'none', boxShadow: 'var(--shadow-sm)' }}
         />
       </div>
