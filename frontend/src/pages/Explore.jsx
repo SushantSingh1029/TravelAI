@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../services/api';
 import DestinationCard from '../components/DestinationCard';
+import Select from 'react-select';
 
 export default function Explore() {
   const [destinations, setDestinations] = useState([]);
@@ -30,15 +31,25 @@ export default function Explore() {
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <h1 style={{ marginBottom: '20px' }}>Explore Destinations</h1>
       
-      <div style={{ marginBottom: '30px' }}>
-        <input 
-          type="text" 
-          placeholder="Search by name or country..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          autoComplete="off"
-          spellCheck="false"
-          style={{ width: '100%', maxWidth: '400px', padding: '12px 20px', borderRadius: '30px', border: '1px solid #ccc', fontSize: '1rem', outline: 'none', boxShadow: 'var(--shadow-sm)' }}
+      <div style={{ marginBottom: '30px', maxWidth: '400px' }}>
+        <Select
+          options={destinations.map(d => ({ value: d.name, label: `${d.name}, ${d.country}` }))}
+          value={search ? { value: search, label: search } : null}
+          onChange={(selectedOption) => setSearch(selectedOption ? selectedOption.value : '')}
+          placeholder="Search by name or country..."
+          isSearchable={true}
+          isClearable={true}
+          styles={{
+            control: (base) => ({
+              ...base,
+              padding: '6px',
+              borderRadius: '8px',
+              border: '1px solid #ccc',
+              boxShadow: 'var(--shadow-sm)',
+              fontSize: '1rem',
+              '&:hover': { border: '1px solid #aaa' }
+            })
+          }}
         />
       </div>
 
